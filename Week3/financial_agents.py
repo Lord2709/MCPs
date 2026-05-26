@@ -98,53 +98,82 @@ class SavingsGoalCalculator(MCPTool):
             )
             return future.result()
     
-# Agents
-ci_agent = Agent(
-    role="Compound Interest Calculator",
-    goal="Calculate the future value of an investment based on compound interest.",
-    backstory="You are a helpful assistant that calculates the future value of an investment based on compound interest. You can take into account the initial principal, monthly contributions, annual interest rate, and the number of years the money is invested for.",
-    tools=[CompoundInterestCalculator()],
+# # 3 - Separate Agents and Tasks for each tool
+# ci_agent = Agent(
+#     role="Compound Interest Calculator",
+#     goal="Calculate the future value of an investment based on compound interest.",
+#     backstory="You are a helpful assistant that calculates the future value of an investment based on compound interest. You can take into account the initial principal, monthly contributions, annual interest rate, and the number of years the money is invested for.",
+#     tools=[CompoundInterestCalculator()],
+#     llm=llm
+# )
+
+# loan_agent = Agent(
+#     role="Loan Specialist",
+#     goal="Calculate loan EMI accurately",
+#     backstory="You are a financial expert specializing in loans",
+#     tools=[LoanEMICalculator()],
+#     llm=llm
+# )
+
+# goal_agent = Agent(
+#     role="Savings Goal Planner",
+#     goal="Calculate how long it will take to reach a savings goal",
+#     backstory="You are a financial planner who helps users determine how long it will take to reach their savings goals based on their monthly savings, current savings, and expected annual interest rate.",
+#     tools=[SavingsGoalCalculator()],
+#     llm=llm
+# )
+
+# # Tasks
+# ci_task = Task(
+#     description="Calculate the future value of investing $1,000 upfront with $500 monthly contributions at 8% annual interest for 10 years.",
+#     agent=ci_agent,
+#     expected_output="Total invested, interest earned, and final value in dollars"
+# )
+
+# loan_task = Task(
+#     description="Calculate the monthly EMI for a $20,000 loan at 7% annual interest for 5 years.",
+#     agent=loan_agent,
+#     expected_output="Monthly EMI, total amount paid, and total interest paid in dollars"
+# )
+
+# goal_task = Task(
+#     description="I have $2,000 saved already and save $500 per month at 6% annual interest. How long to reach $20,000?",
+#     agent=goal_agent,
+#     expected_output="Time required in years and months to reach the savings goal"
+# )
+
+# crew = Crew(
+#     agents=[ci_agent, loan_agent, goal_agent],
+#     tasks=[ci_task, loan_task, goal_task],
+#     process=Process.sequential,
+#     verbose=True
+# )
+
+
+# One agent with all three tools
+financial_agent = Agent(
+    role="Personal Financial Advisor",
+    goal="Answer any financial question accurately using the right calculation tool",
+    backstory="You are an expert financial advisor with tools for investments, loans, and savings calculations.",
+    tools=[
+        CompoundInterestCalculator(),
+        LoanEMICalculator(),
+        SavingsGoalCalculator()
+    ],
     llm=llm
 )
 
-loan_agent = Agent(
-    role="Loan Specialist",
-    goal="Calculate loan EMI accurately",
-    backstory="You are a financial expert specializing in loans",
-    tools=[LoanEMICalculator()],
-    llm=llm
-)
+user_input = input("Ask your financial question: ")
 
-goal_agent = Agent(
-    role="Savings Goal Planner",
-    goal="Calculate how long it will take to reach a savings goal",
-    backstory="You are a financial planner who helps users determine how long it will take to reach their savings goals based on their monthly savings, current savings, and expected annual interest rate.",
-    tools=[SavingsGoalCalculator()],
-    llm=llm
-)
-
-# Tasks
-ci_task = Task(
-    description="Calculate the future value of investing $1,000 upfront with $500 monthly contributions at 8% annual interest for 10 years.",
-    agent=ci_agent,
-    expected_output="Total invested, interest earned, and final value in dollars"
-)
-
-loan_task = Task(
-    description="Calculate the monthly EMI for a $20,000 loan at 7% annual interest for 5 years.",
-    agent=loan_agent,
-    expected_output="Monthly EMI, total amount paid, and total interest paid in dollars"
-)
-
-goal_task = Task(
-    description="I have $2,000 saved already and save $500 per month at 6% annual interest. How long to reach $20,000?",
-    agent=goal_agent,
-    expected_output="Time required in years and months to reach the savings goal"
+task = Task(
+    description=user_input,
+    agent=financial_agent,
+    expected_output="A clear financial answer with all relevant numbers"
 )
 
 crew = Crew(
-    agents=[ci_agent, loan_agent, goal_agent],
-    tasks=[ci_task, loan_task, goal_task],
+    agents=[financial_agent],
+    tasks=[task],
     process=Process.sequential,
     verbose=True
 )
